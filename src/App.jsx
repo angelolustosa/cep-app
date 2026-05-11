@@ -1,121 +1,143 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import axios from 'axios'
+import { useEffect, useState } from 'react'
+import { InputLabel } from './components/InputLabel'
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [cep, setCep] = useState({})
+  const [dataForm, setDataForm] = useState({})
+
+  const handleChange = (event) => {
+    const { id, value } = event.target
+
+    console.log('id', id);
+    console.log('value', value);
+
+
+    setDataForm((prevDataForm) => ({
+      ...prevDataForm,
+      [id]: value,
+    }))
+  }
+
+  const buscarCep = async (cep) => {
+    const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+    console.log('bucarCep', response.data);
+
+    // setar os campos que vem da api no dataForm
+    setDataForm((prevDataForm) => ({
+      ...prevDataForm,
+      logradouro: response.data.logradouro,
+      complemento: response.data.complemento,
+      bairro: response.data.bairro,
+      cidade: response.data.localidade,
+      uf: response.data.uf,
+    }))
+
+
+    setCep(response.data)
+  }
+
+
+  useEffect(() => {
+
+    console.log('cep Useeffect', dataForm.cep);
+
+    if (dataForm.cep?.length === 8) {
+      buscarCep(dataForm.cep)
+    }
+
+
+  }, [dataForm.cep])
+
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className='container mt-5'>
 
-      <div className="ticks"></div>
+      <div className="row justify-content-center">
+        <div className="col-sm-2 col-md-10">
+          <div className="card shadow p-4">
+            <h2 className="mb-4 text-center">Consulta CEP</h2>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            <form className="row g-3 needs-validation" novalidate>
+              {/* <div className="col md-2">
+                <label className='form-label' htmlFor="cep">CEP</label>
+                <input type="text" className='form-control' required id='cep' />
+              </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+              <div className="col md-4">
+                <label className='form-label' htmlFor="logradouro">Logradouro</label>
+                <input type="text" className='form-control' required id='logradouro' />
+              </div> */}
+
+              <InputLabel
+                id="cep"
+                size={2}
+                label="CEP"
+                value={dataForm.cep || ''}
+                onChange={handleChange}
+              />
+
+              <InputLabel
+                id="logradouro"
+                size={6}
+                label="Logradouro"
+                value={dataForm.logradouro || ''}
+                onChange={handleChange}
+              />
+
+              <InputLabel
+                id="numero"
+                size={2}
+                label="Nº"
+                value={dataForm.numero || ''}
+                onChange={handleChange}
+              />
+
+              <InputLabel
+                id="complemento"
+                size={10}
+                label="Complemento"
+                value={dataForm.complemento || ''}
+                onChange={handleChange}
+              />
+
+              <InputLabel
+                id="bairro"
+                size={6}
+                label="Bairro"
+                value={dataForm.bairro || ''}
+                onChange={handleChange}
+              />
+
+              <InputLabel
+                id="uf"
+                size={2}
+                label="UF"
+                value={dataForm.uf || ''}
+                onChange={handleChange}
+              />
+
+              <InputLabel
+                id="cidade"
+                size={2}
+                label="Cidade"
+                value={dataForm.cidade || ''}
+                onChange={handleChange}
+              />
+
+              <button type="button" class="btn btn-primary">Primary</button>
+
+
+            </form>
+
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
   )
 }
 
