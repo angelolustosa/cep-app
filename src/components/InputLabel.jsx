@@ -1,10 +1,14 @@
-export const InputLabel = ({ id, label, value, onChange,size }) => {
+import { forwardRef } from "react"
+
+//export const InputLabel = ({ id, label, value, onChange,size }) => {
+export const InputLabel = forwardRef(({ id, label, value, onChange,size }, ref) => {
     return (
         <div className={`col-md-${size}`}>
             <label className='form-label' htmlFor={id}>
                 {label}
             </label>
             <input
+                ref={ref} //Adicionar para termos o ref
                 type="text"
                 className='form-control'
                 required
@@ -15,4 +19,4 @@ export const InputLabel = ({ id, label, value, onChange,size }) => {
             />
         </div>
     )
-}
+})

@@ -1,11 +1,19 @@
 import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { InputLabel } from './components/InputLabel'
+import { listarEstados, listarMunicipiosPorUF } from './services/ibge.service'
+import { SelectInput } from './components/SelectInput'
+import { buscarCep } from './services/cep.service'
 
 
 function App() {
   const [cep, setCep] = useState({})
   const [dataForm, setDataForm] = useState({})
+
+  const [estados, setEstados] = useState([])
+  const [cidade, setCidade] = useState([])
+
+  const numeroRef = useRef(null)
 
   const handleChange = (event) => {
     const { id, value } = event.target
@@ -20,31 +28,65 @@ function App() {
     }))
   }
 
-  const buscarCep = async (cep) => {
-    const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
-    console.log('bucarCep', response.data);
+  const carregarCep = async (cep) => {
+    try {
+      const response = await buscarCep(cep)
 
-    // setar os campos que vem da api no dataForm
-    setDataForm((prevDataForm) => ({
-      ...prevDataForm,
-      logradouro: response.data.logradouro,
-      complemento: response.data.complemento,
-      bairro: response.data.bairro,
-      cidade: response.data.localidade,
-      uf: response.data.uf,
-    }))
+      setDataForm((prevDataForm) => ({
+        ...prevDataForm,
+        logradouro: response.logradouro,
+        complemento: response.complemento,
+        bairro: response.bairro,
+        cidade: response.localidade,
+        uf: response.uf,
+      }))
 
+      // foco no input número
+      numeroRef.current?.focus()
 
-    setCep(response.data)
+    } catch (error) {
+
+      console.error(error)
+    }
   }
 
+  const carregarEstados = async () => {
+    try {
+      const response = await listarEstados()
+      console.log('carregarEstados');
+
+      setEstados(response)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const carregarMunicipios = async (uf) => {
+    try {
+      const response = await listarMunicipiosPorUF(uf)
+      setCidade(response)
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   useEffect(() => {
+    carregarEstados()
+  }, [])
 
+  useEffect(() => {
+    if (dataForm.uf) {
+      carregarMunicipios(dataForm.uf)
+    }
+
+  }, [dataForm.uf])
+
+  useEffect(() => {
     console.log('cep Useeffect', dataForm.cep);
 
     if (dataForm.cep?.length === 8) {
-      buscarCep(dataForm.cep)
+      carregarCep(dataForm.cep)
     }
 
 
@@ -87,6 +129,7 @@ function App() {
               />
 
               <InputLabel
+                ref={numeroRef}
                 id="numero"
                 size={2}
                 label="Nº"
@@ -110,20 +153,44 @@ function App() {
                 onChange={handleChange}
               />
 
-              <InputLabel
+              {/* <InputLabel
                 id="uf"
                 size={2}
                 label="UF"
                 value={dataForm.uf || ''}
                 onChange={handleChange}
+              /> */}
+
+              <SelectInput
+                id="uf"
+                label="UF"
+                size={3}
+                value={dataForm.uf || ''}
+                onChange={handleChange}
+                options={estados}
+                optionLabel="nome"
+                optionValue="sigla"
+                placeholder="Selecione o estado"
               />
 
-              <InputLabel
+              {/* <InputLabel
                 id="cidade"
                 size={2}
                 label="Cidade"
                 value={dataForm.cidade || ''}
                 onChange={handleChange}
+              /> */}
+
+              <SelectInput
+                id="cidade"
+                label="Cidade"
+                size={3}
+                value={dataForm.cidade || ''}
+                onChange={handleChange}
+                options={cidade}
+                optionLabel="nome"
+                optionValue="sigla"
+                placeholder="Selecione a cidade"
               />
 
               <button type="button" class="btn btn-primary">Primary</button>
